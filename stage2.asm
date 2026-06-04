@@ -1,22 +1,26 @@
 bits 16
-org 0x7e00
+
+extern print_string
+extern print_new_line
+extern number_to_str
+
+extern BOOT_DRIVE
 
 _start:
     mov si, msg
     call print_string
 
+    call print_new_line
+
+    ; xor ax, ax
+    ; mov al, [BOOT_DRIVE]
+    ; mov si, 0x9000
+    ; call number_to_str
+
+    ; mov si, di
+    ; call print_string
+
 hang:
     jmp hang
-
-print_string:
-    mov ah, 0x0e ; teletype
-
-    lodsb
-    or al, al
-    jz done_printing
-    int 0x10
-    jmp print_string
-done_printing:
-    ret
 
 msg db "Hello Sugat, form Stage 2", 0

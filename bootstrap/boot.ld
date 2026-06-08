@@ -3,8 +3,15 @@ SECTIONS {
     .text :
     {
         *boot.o(.text*)
-        *printing.o(.text*)
+        *(.text*)
+
+        *boot.o(.data*)
+        *(.data*)
+
+        *boot.o(.rodata*)
+        *(.rodata*)
     }
+
     ASSERT(
         SIZEOF(.text)<=446,
         "MBR code too large"
@@ -20,6 +27,6 @@ SECTIONS {
     . = 0x7DFE;
     .sig :
     {
-        SHORT(0xAA55)
+        *boot.o(.boot_sig)
     }
 }

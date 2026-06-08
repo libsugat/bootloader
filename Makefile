@@ -8,18 +8,23 @@ LDFLAGS   := -m elf_i386
 
 # Directories & Targets
 BUILD_DIR           := build
-BOOTSTRAP_DIR       := bootstrap
-BOOTSTRAP_UTILS_DIR := $(BOOTSTRAP_DIR)/utils
 TARGET              := $(BUILD_DIR)/disk.img
 
-# Source & Object Mappings
-BOOT_SRC      := $(BOOTSTRAP_DIR)/boot.asm
-STAGE2_SRC    := stage2.asm
-BS_UTILS_SRCS := $(wildcard $(BOOTSTRAP_UTILS_DIR)/*.asm)
+BOOTSTRAP_DIR       := bootstrap
+BOOTSTRAP_UTILS_DIR := $(BOOTSTRAP_DIR)/utils
+STAGE2_DIR 			:= .
+STAGE2_UTILS_DIR 	:= $(STAGE2_DIR)/utils
 
-BS_UTILS_OBJS := $(patsubst $(BOOTSTRAP_UTILS_DIR)/%.asm, $(BUILD_DIR)/utils/%.o, $(BS_UTILS_SRCS))
-BS_OBJS       := $(strip $(BUILD_DIR)/boot.o $(BS_UTILS_OBJS))
-STAGE2_OBJS   := $(BUILD_DIR)/stage2.o
+# Source & Object Mappings
+BOOT_SRC      	  	:= $(BOOTSTRAP_DIR)/boot.asm
+BS_UTILS_SRCS 		:= $(wildcard $(BOOTSTRAP_UTILS_DIR)/*.asm)
+STAGE2_SRC    		:= $(STAGE2_DIR)/stage2.asm
+STAGE2_UTILS_SRCS 	:= $(wildcard $(STAGE2_UTILS_DIR)/*.asm)
+
+BS_UTILS_OBJS     := $(patsubst $(BOOTSTRAP_UTILS_DIR)/%.asm, $(BUILD_DIR)/bs_utils/%.o, $(BS_UTILS_SRCS))
+BS_OBJS       	  := $(strip $(BUILD_DIR)/boot.o $(BS_UTILS_OBJS))
+STAGE2_UTILS_OBJS := $(patsubst $(STAGE2_UTILS_DIR)/%.asm, $(BUILD_DIR)/utils/%.o, $(STAGE2_UTILS_SRCS))
+STAGE2_OBJS   	  := $(strip $(BUILD_DIR)/stage2.o $(STAGE2_UTILS_OBJS))
 
 # Build Artifacts
 BS_ELF     := $(BUILD_DIR)/boot.elf
@@ -38,13 +43,18 @@ run: all
 $(BUILD_DIR):
 	@mkdir -p $@
 	@mkdir -p $@/utils
+	@mkdir -p $@/bs_utils
 
 # =========== Compilation ===========
-$(BUILD_DIR)/utils/%.o: $(BOOTSTRAP_UTILS_DIR)/%.asm
+$(BUILD_DIR)/bs_utils/%.o: $(BOOTSTRAP_UTILS_DIR)/%.asm
 	@echo "[Assembling]: $< -> $@"
 	@$(ASM) $(ASM_FLAGS) $< -o $@
 
 $(BUILD_DIR)/boot.o: $(BOOT_SRC)
+	@echo "[Assembling]: $< -> $@"
+	@$(ASM) $(ASM_FLAGS) $< -o $@
+
+$(BUILD_DIR)/utils/%.o: $(STAGE2_UTILS_DIR)/%.asm
 	@echo "[Assembling]: $< -> $@"
 	@$(ASM) $(ASM_FLAGS) $< -o $@
 
@@ -57,7 +67,7 @@ $(BS_ELF): $(BOOTSTRAP_DIR)/boot.ld $(BS_OBJS)
 	@echo "[Linking Stage 1]"
 	@$(LD) $(LDFLAGS) -T $(BOOTSTRAP_DIR)/boot.ld $(BS_OBJS) -o $(BS_ELF)
 
-$(STAGE2_ELF): stage2.ld $(STAGE2_OBJS) $(BS_ELF)
+$(STAGE2_ELF): $(STAGE2_DIR)/stage2.ld $(STAGE2_OBJS) $(BS_ELF)
 	@echo "[Linking Stage 2]"
 	@$(LD) $(LDFLAGS) -T stage2.ld $(STAGE2_OBJS) -R $(BS_ELF) -o $(STAGE2_ELF)
 

@@ -1,10 +1,19 @@
 bits 16 ; tell NASM this is 16 bit code
-; org 0x7c00 ; tell NASM to start outputting stuff at offset 0x7c00
 
+; ------------------------------------------------------------------
+; External symbols
+; ------------------------------------------------------------------
 extern print_string
 extern print_new_line
 extern number_to_str
-global BOOT_DRIVE
+
+; ------------------------------------------------------------------
+; Exported symbols
+; ------------------------------------------------------------------
+
+global BOOT_DRIVE ; Exports address where boot drive is stored for use in other stages
+
+SECTION .text
 
 jmp 0x00:boot ; For some weird bios that uses 0x07c0:0x00 for memory address
 boot:
@@ -38,8 +47,8 @@ boot:
     ; lets try reading second sector form the disk
     mov ah, 0x02 ; function code of interupt (read sector)
     mov al, 0x01 ; read one sector from storage (512bytes)
-    mov bx, 0x7e00 ; Set the Offset (BX) to 0x8000
-                   ; The data will be loaded to physical RAM 0x08000
+    mov bx, 0x7e00 ; Set the Offset (BX) to 0x7e00
+                   ; The data will be loaded to physical RAM 0x7c00
     mov ch, 0x0  ; cylinder = 0
     mov dh, ch   ; head = 0
     mov cl, 0x02 ; sector = 2
@@ -58,15 +67,20 @@ read_success:
     mov si, read_success_msg ; print the message of read success
     call print_string        
     call print_new_line      ; print a new line
-    jmp 0x7e00               ; jump to the newly loaded code 
+    jmp bx                   ; jump to the newly loaded code 
 
 halt:
     cli ; clear interrupt flag
     hlt ; halt execution
 
+
+
+
 ; ==== This sections holds reading and writing data ====
+SECTION .data   ; writeable data 
 BOOT_DRIVE db 0
 
+SECTION .rodata ; readonly data sections
 hello db "hello world!",
 new_line_str db 13, 10, 0
 hello_len equ $ - hello
@@ -74,8 +88,7 @@ hello_len equ $ - hello
 read_fail_msg db "Failed Sector 2 read", 0
 read_success_msg db "Sector 2 loaded successfully!", 0
 
-; ; ==== Padding with 0x00 ====
-; times 510 - ($-$$) db 0 ; pad remaining 510 bytes with zeroes
-; ; ==== Boot Signature ====
-; dw 0xaa55 ; magic bootloader magic - marks this 512 byte sector bootable!
 
+; ==== This puts the signature in its own linkable section ====
+SECTION .boot_sig
+    dw 0xaa55

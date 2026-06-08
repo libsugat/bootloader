@@ -1,9 +1,14 @@
 bits 16
 
+; ------------------------------------------------------------------
+; Exported symbols
+; ------------------------------------------------------------------
+
 global number_to_str
 global print_string
 global print_new_line
 
+SECTION .text
 ; --- Converts number in AX to printable null terminating ascii string ---
 ; inputs: destination of the string in di, input number in ax
 ; return: string length in ax
@@ -20,7 +25,7 @@ number_to_str:
     jnz convert
     mov byte [di], '0'
     inc di
-    jmp number_to_str_done
+    jmp number_to_str__exit
 convert:
     mov bx, 10
 next_digit:
@@ -42,7 +47,7 @@ get_str:
     inc di
     loop get_str
     
-number_to_str_done:
+number_to_str__exit:
     mov byte [di], 0
     mov di, si
 
@@ -60,10 +65,10 @@ print_string:
     mov ah, 0x0e ; teletype
     lodsb
     or al, al
-    jz done_printing
+    jz print_string__exit
     int 0x10
     jmp print_string
-done_printing:
+print_string__exit:
     ret
 
 ; --- prints a new line ---

@@ -9,9 +9,12 @@ global print_string
 global print_new_line
 
 SECTION .text
-; --- Converts number in AX to printable null terminating ascii string ---
-; inputs: destination of the string in di, input number in ax
-; return: string length in ax
+; =============================================================================
+; Function: number_to_hex
+; Input:    AX = 16-bit unsigned integer, DI = Destination buffer pointer
+; Output:   DI = Reset to string start. Buffer contains e.g., "1424", 0
+;           AX = length of the string
+; =============================================================================
 number_to_str:
     push bx
     push cx
@@ -72,7 +75,7 @@ print_string__exit:
     ret
 
 ; --- prints a new line ---
-; affected registers : AX
+; affected registers : ax
 print_new_line:
     mov ah, 0x0e ; teletype
     mov al, 13

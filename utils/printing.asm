@@ -16,6 +16,7 @@ SECTION .test
 ; Function: number_to_hex
 ; Input:    AX = 16-bit unsigned integer, DI = Destination buffer pointer
 ; Output:   DI = Reset to string start. Buffer contains e.g., "1A2Fh", 0
+;           AX = length of the string
 ; =============================================================================
 number_to_hex:
     push bx

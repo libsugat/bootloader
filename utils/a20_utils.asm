@@ -31,8 +31,8 @@ check_a20:
     mov si, 0x7e0e
 
     ; Save original values
-    mov bx, [es:di]
-    mov dx, [ds:si]
+    push [es:di]
+    push [ds:si]
 
     ; Write test data to low memory
     mov word [es:di], 0xb55b
@@ -41,11 +41,11 @@ check_a20:
     mov word [ds:si], 0x5aa5
 
     ; check if low memory was over written
-    cmp [es:di], 0x5aa5
+    cmp word [es:di], 0x5aa5
 
     ; Restore original values immediately to prevent corruption
-    mov [es:di], bx
-    mov [ds:si], dx
+    pop [ds:si]
+    pop [es:di]
 
     ; deterine the return value
     mov ax, 0
@@ -60,6 +60,13 @@ check_a20__exit:
     popf
     ret
 
+; =============================================================================
+; Function: enable_a20
+; Enables a20 lines to unlock 16mb ram
+; Output:   CF = status of a20 lines
+; Returns: 0 if a20 enabled successfully
+;          1 if a20 enabling failed
+; =============================================================================
 enable_a20:
     pusha
     cli ; turn off interrupts
@@ -84,4 +91,5 @@ enable_a20:
     
 enable_a20__exit:
     popa
+    sti
     ret

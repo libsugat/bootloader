@@ -1,3 +1,4 @@
+RO_DATA_ALIGN = 8;
 SECTIONS {
     . = 0x7e00;
 
@@ -12,7 +13,8 @@ SECTIONS {
         *stage2.o(.data*)
         *(.data*)
     }
-    .rodata :
+
+    .rodata : ALIGN(RO_DATA_ALIGN) SUBALIGN(RO_DATA_ALIGN)
     {
         *stage2.o(.rodata*)
         *(.rodata*)

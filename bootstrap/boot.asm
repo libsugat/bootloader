@@ -45,42 +45,48 @@ boot:
     call print_new_line
 
     ; lets try reading second sector form the disk
-    mov ah, 0x02 ; function code of interupt (read sector)
-    mov al, 0x01 ; read one sector from storage (512bytes)
-    mov bx, 0x7e00 ; Set the Offset (BX) to 0x7e00
-                   ; The data will be loaded to physical RAM 0x7c00
-    mov ch, 0x0  ; cylinder = 0
-    mov dh, ch   ; head = 0
-    mov cl, 0x02 ; sector = 2
-    mov dl, [BOOT_DRIVE]
+    mov ah, 0x42                ; Extended read, disk read
+    mov dl, [BOOT_DRIVE]        ; Read form boot drive
+    mov si, DISK_ADDRESS_PACKET ; Set the address of DAP
     
     int 0x13         ; Bios disk interrupt
     jc disk_error    ; If read fails
-    jmp read_success ; If read succed
+
+read_success:
+    mov si, read_success_msg ; print the message of read success
+    call print_string        
+    call print_new_line      ; print a new line
+    jmp 0x7e00               ; jump to the newly loaded code 
 
 disk_error:
     mov si, read_fail_msg ; print the disk read failure message
     call print_string
     jmp halt              ; halt as fallback
 
-read_success:
-    mov si, read_success_msg ; print the message of read success
-    call print_string        
-    call print_new_line      ; print a new line
-    jmp bx                   ; jump to the newly loaded code 
-
 halt:
     cli ; clear interrupt flag
     hlt ; halt execution
 
 
-
-
-; ==== This sections holds reading and writing data ====
-SECTION .data   ; writeable data 
+; ===============================================================
+;      This sections holds reading and writing data
+; ===============================================================
+SECTION .data align=4   ; writeable data 
 BOOT_DRIVE db 0
 
-SECTION .rodata ; readonly data sections
+align 4
+DISK_ADDRESS_PACKET: 
+    db 0x10   ; Size of packet (16B) 
+    db 0x00   ; Rerserved 1 byte of DAP
+    dw 0x01   ; Number of sectors to read
+    dw 0x7e00 ; Target memory offset
+    dw 0x00   ; Target memory segment
+    dq 0x01   ; STARTING LBA
+
+; ===============================================================
+;                  Read-only data & Buffers
+; ===============================================================
+SECTION .rodata
 hello db "hello world!",
 new_line_str db 13, 10, 0
 hello_len equ $ - hello
@@ -89,6 +95,8 @@ read_fail_msg db "Failed Sector 2 read", 0
 read_success_msg db "Sector 2 loaded successfully!", 0
 
 
-; ==== This puts the signature in its own linkable section ====
+; ===============================================================
+; ==== This puts the signature in its own linkable section ======
+; ===============================================================
 SECTION .boot_sig
     dw 0xaa55

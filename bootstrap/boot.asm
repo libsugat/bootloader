@@ -78,7 +78,7 @@ align 4
 DISK_ADDRESS_PACKET: 
     db 0x10   ; Size of packet (16B) 
     db 0x00   ; Rerserved 1 byte of DAP
-    dw 0x01   ; Number of sectors to read
+    dw 0x02   ; Number of sectors to read
     dw 0x7e00 ; Target memory offset
     dw 0x00   ; Target memory segment
     dq 0x01   ; STARTING LBA
@@ -93,7 +93,6 @@ hello_len equ $ - hello
 
 read_fail_msg db "Failed Sector 2 read", 0
 read_success_msg db "Sector 2 loaded successfully!", 0
-
 
 ; ===============================================================
 ; ==== This puts the signature in its own linkable section ======

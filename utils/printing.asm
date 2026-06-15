@@ -10,7 +10,7 @@ extern print_string
 ; ------------------------------------------------------------------
 global number_to_hex
 
-SECTION .test
+SECTION .text
 
 ; =============================================================================
 ; Function: number_to_hex

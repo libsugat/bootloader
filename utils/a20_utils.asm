@@ -6,6 +6,8 @@ bits 16
 global check_a20
 global enable_a20
 
+SECTION .text
+
 ; =============================================================================
 ; Function: check_a20
 ; checks if a20 lines are enabled or gated

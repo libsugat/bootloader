@@ -1,8 +1,8 @@
 bits 16
 
-; ------------------------------------------------------------------
+; =================================================================  
 ; External symbols
-; ------------------------------------------------------------------
+; =================================================================  
 
 ; Utility Functions from Sector 1 (bootstrap)
 extern print_string
@@ -21,9 +21,10 @@ extern enable_a20
 ; from gdt.asm
 extern gdt_descriptor
 
-; ------------------------------------------------------------------
+extern build_memory_map
+; =================================================================  
 ; Exported symbols
-; ------------------------------------------------------------------
+; =================================================================  
 
 global _start
 
@@ -31,10 +32,8 @@ SECTION .text
 _start:
     mov si, msg
     call print_string
-
     call print_new_line
 
-    
     call enable_a20
     jc a20_failed
     mov si, a20_enabled_msg
@@ -42,8 +41,6 @@ _start:
     call print_new_line
 
     cli
-    push ds
-
     lgdt [gdt_descriptor]
 
     mov eax, cr0
@@ -60,7 +57,7 @@ a20_failed:
     call print_string
     jmp hang
 
-; ------------------ Temperory Real Mode ----------------
+; ------------------ Temperory Real Mode ------------------
 bits 32
 pmode:
     mov ax, 0x10
@@ -74,7 +71,7 @@ pmode:
 
 bits 16
 pmode_16:
-    ; Flip the cr0 
+    ; Flip the cr0 to switch back to real mode
     mov eax, cr0
     and eax, ~1
     mov cr0, eax
@@ -105,13 +102,37 @@ unreal_mode:
     call print_string
     call print_new_line
 
+    ; Lets try to print the CPU Vendor, just a fun late night activity
+    ; assert : cpu support cpuid and is 32bit or above
+    mov eax, 0x00000000
+    cpuid
+    mov di, 0x9000
+    mov dword [di], ebx 
+    mov dword [di + 4], edx 
+    mov dword [di + 8], ecx
+    mov byte [di + 12], 0
+    mov si, di
+    call print_string
+    call print_new_line
+
+    ; Build the memory map at address 0x8000
+    mov di, 0x8000
+    call build_memory_map ; Call out function to do memory map
+    jc proof_failed       ; Just in case
+
+    ; Print the number of enteries
+    mov di, 0x9000
+    call number_to_str
+    mov si, di
+    call print_string
+    call print_new_line
+
     jmp hang
 
 proof_failed:
     mov si, urm_failure
     call print_string
     jmp hang
-
 
 ; ===============================================================
 ;                  Read-only data & Buffers

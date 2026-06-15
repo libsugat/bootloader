@@ -38,7 +38,7 @@ all: $(BUILD_DIR) $(TARGET)
 
 run: all
 	@echo "[Running]: QEMU x86_64"
-	qemu-system-x86_64 -drive format=raw,file=$(TARGET)
+	qemu-system-x86_64 -drive format=raw,file=$(TARGET) -d cpu_reset,int -no-reboot -no-shutdown
 
 $(BUILD_DIR):
 	@mkdir -p $@

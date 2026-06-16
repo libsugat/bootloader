@@ -116,7 +116,7 @@ unreal_mode:
     call print_new_line
 
     ; Build the memory map at address 0x8000
-    mov di, 0x8000
+    mov di, 0x0600
     call build_memory_map ; Call out function to do memory map
     jc proof_failed       ; Just in case
 
@@ -126,6 +126,8 @@ unreal_mode:
     mov si, di
     call print_string
     call print_new_line
+
+    ; We need to load elf files now
 
     jmp hang
 
@@ -137,6 +139,8 @@ proof_failed:
 ; ===============================================================
 ;                  Read-only data & Buffers
 ; ===============================================================
+SECTION .data
+some_data db "hello", 0
 SECTION .rodata
 msg db "Hello Sugat, form Stage 2", 0
 a20_enabled_msg db "Enabled A20...", 0

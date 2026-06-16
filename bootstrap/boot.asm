@@ -7,6 +7,8 @@ extern print_string
 extern print_new_line
 extern number_to_str
 
+extern read_sectors
+
 ; ------------------------------------------------------------------
 ; Exported symbols
 ; ------------------------------------------------------------------
@@ -45,11 +47,13 @@ boot:
     call print_new_line
 
     ; lets try reading second sector form the disk
-    mov ah, 0x42                ; Extended read, disk read
     mov dl, [BOOT_DRIVE]        ; Read form boot drive
-    mov si, DISK_ADDRESS_PACKET ; Set the address of DAP
-    
-    int 0x13         ; Bios disk interrupt
+    mov di, 0x7e00
+    mov cx, 0x02
+    mov ax, 0x01
+    xor bp, bp
+    call read_sectors
+
     jc disk_error    ; If read fails
 
 read_success:
@@ -73,15 +77,6 @@ halt:
 ; ===============================================================
 SECTION .data align=4   ; writeable data 
 BOOT_DRIVE db 0
-
-align 4
-DISK_ADDRESS_PACKET: 
-    db 0x10   ; Size of packet (16B) 
-    db 0x00   ; Rerserved 1 byte of DAP
-    dw 0x02   ; Number of sectors to read
-    dw 0x7e00 ; Target memory offset
-    dw 0x00   ; Target memory segment
-    dq 0x01   ; STARTING LBA
 
 ; ===============================================================
 ;                  Read-only data & Buffers

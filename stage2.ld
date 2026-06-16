@@ -8,6 +8,7 @@ SECTIONS {
         *(.text*)
     }
 
+    /* . = 0x8000 */
     .data :
     {
         *stage2.o(.data*)

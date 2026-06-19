@@ -6,6 +6,10 @@ bits 16
 global check_a20
 global enable_a20
 
+; =================================================================  
+; CODE SEGMENT: Executable Instructions
+; =================================================================
+
 SECTION .text
 
 ; =============================================================================
@@ -29,8 +33,8 @@ check_a20:
 
     ; Point to high memory
     not ax
-    mov ds, ax
-    mov si, 0x7e0e
+    mov ds, ax      ; set DS = 0xffff
+    mov si, 0x7e0e  ; 0xffff * 16 = 0x107DFE = 1mb + 0x7DFE
 
     ; Save original values
     push [es:di]

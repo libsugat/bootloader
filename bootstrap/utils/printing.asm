@@ -8,6 +8,9 @@ global number_to_str
 global print_string
 global print_new_line
 
+; =================================================================  
+; CODE SEGMENT: Executable Instructions
+; =================================================================
 SECTION .text
 ; =============================================================================
 ; Function: number_to_hex
@@ -61,16 +64,19 @@ number_to_str__exit:
     ret
 
 ; --- Teletypes Null terminating ASCII string to BIOS display output ---
+; Function : print_string
 ; The following functions prints a null terminating ascii string
 ; SI = Source Address of the string
 ; Affected registers : AX, AH
 print_string:
+    cld
+.loop
     mov ah, 0x0e ; teletype
     lodsb
     or al, al
     jz print_string__exit
     int 0x10
-    jmp print_string
+    jmp .loop
 print_string__exit:
     ret
 

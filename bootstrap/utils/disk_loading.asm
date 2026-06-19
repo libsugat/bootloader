@@ -6,26 +6,31 @@ extern clear_bytes
 ; ------------------------------------------------------------------
 global read_sectors
 
+; =================================================================  
+; CODE SEGMENT: Executable Instructions
+; =================================================================
+
 SECTION .text
 ; =============================================================================
 ; Function: read_sectors
 ; Input:    AX = lower 2 bytes of 64 bit target lba
+;           BP = upper 2 bytes of target lba
 ;           DI = Destination buffer pointer,
-;           BP = drive number,
 ;           CX = Number of sectors to read
+;           DL = drive number
 ;
 ; Output:   CF (Carry Flag), as success indicator
-; Assumeption: 16B are free starting at 0x7bf1
+; Assumeption: 16B are free starting at 0xa000
 ; =============================================================================
 read_sectors:
     push bx
     ; Clear the memory for DAP
     push cx
     push di
-    mov bx, DAP_ADDRESS
-    mov di, bx
-    mov cx, 0x10
-    call clear_bytes
+    mov bx, DAP_ADDRESS ; Clear form address DAP_ADDRESS 
+    mov di, bx          ; 
+    mov cx, 0x10        ;
+    call clear_bytes    ;
     pop di
     pop cx
 
@@ -47,7 +52,7 @@ read_sectors:
 ;      This sections holds reading and writing data
 ; ===============================================================
 SECTION .data align=4   ; writeable data 
-    DAP_ADDRESS equ 0x7bf1
+    DAP_ADDRESS equ 0x7bf0
     DAP_SECTORS_OFF equ 2
     DAP_DEST_OFF equ 4
     DAP_SLBA_OFF equ 8

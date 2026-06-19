@@ -15,6 +15,9 @@ extern read_sectors
 
 global BOOT_DRIVE ; Exports address where boot drive is stored for use in other stages
 
+; =================================================================  
+; CODE SEGMENT: Executable Instructions
+; =================================================================
 SECTION .text
 
 jmp 0x00:boot ; For some weird bios that uses 0x07c0:0x00 for memory address
@@ -29,6 +32,17 @@ boot:
     mov ss, ax
     mov sp, 0x7000
     sti
+    
+; setup_stack:
+;     cli
+;     mov ax, 0
+;     mov es, ax
+;     mov di, 0x1000        ; Start of stack destination
+;     mov cx, 0x6000        ; Size of stack area (0x7000 - 0x1000)
+;     mov al, 0xCC          ; Fill pattern
+;     cld
+;     rep stosb             ; Fill the whole stack area with 0xCC
+;     sti
 
     ; Print hello world
     mov si, hello

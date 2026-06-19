@@ -14,7 +14,7 @@ SECTION .text
 
 ; =============================================================================
 ; Function: number_to_hex
-; Input:    AX = 16-bit unsigned integer, DI = Destination buffer pointer
+; Input:    AX = 16-bit unsigned integer, DS:DI = Destination buffer pointer
 ; Output:   DI = Reset to string start. Buffer contains e.g., "1A2Fh", 0
 ;           AX = length of the string
 ; =============================================================================
@@ -62,11 +62,11 @@ get_str:
     inc di
     loop get_str
 
+number_to_hex__exit:
     ; --- Format Suffix & Finalize ---
     mov byte [di], 'h' ; Append hex suffix
     inc di
     
-number_to_hex__exit:
     mov byte [di], 0 ; Null-terminate string
     mov di, si       ; Restore DI to starting pointer
 

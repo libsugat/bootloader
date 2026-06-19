@@ -8,6 +8,8 @@ bits 16
 extern print_string
 extern print_new_line
 extern number_to_str
+extern read_sectors
+
 ; Memory mapped variables
 extern BOOT_DRIVE
 
@@ -22,12 +24,16 @@ extern enable_a20
 extern gdt_descriptor
 
 extern build_memory_map
+extern load_elf32
 ; =================================================================  
 ; Exported symbols
 ; =================================================================  
 
 global _start
 
+; =================================================================  
+; CODE SEGMENT: Executable Instructions
+; =================================================================
 SECTION .text
 _start:
     mov si, msg
@@ -95,7 +101,8 @@ unreal_mode:
     xor eax, eax        ; Clear the eax to 0, ensuring we dont cheat
     mov eax, [fs:ebx]   ; Read the data back from the 2 MiB mark into EAX
     cmp eax, 0xDEADBEEF ; Validate the signature
-    jne proof_failed    ; jump will not happen if we are in unreal mode
+    mov si, urm_failure   ; If error, put the error message
+    jne failed    ; jump will not happen if we are in unreal mode
 
     ; Print the success message
     mov si, urm_msg
@@ -115,35 +122,37 @@ unreal_mode:
     call print_string
     call print_new_line
 
-    ; Build the memory map at address 0x8000
+    ; Build the memory map at address 0x0600
     mov di, 0x0600
     call build_memory_map ; Call out function to do memory map
-    jc proof_failed       ; Just in case
-
-    ; Print the number of enteries
-    mov di, 0x9000
-    call number_to_str
-    mov si, di
-    call print_string
-    call print_new_line
+    mov si, mm_failure    ; If error, put the error message
+    jc failed       ; Just in case
 
     ; We need to load elf files now
+    mov dl, [BOOT_DRIVE]        ; Read form boot drive
+    mov ax, 0x03
+    xor bp, bp          
+    call load_elf32       ; Call the loader
+    mov si, elf_load_failure    ; If error, put the error message
+    jc failed            ; If CF, then jump print message and end
 
     jmp hang
 
-proof_failed:
-    mov si, urm_failure
-    call print_string
+failed:
+    call print_string ; Print the error message
+    xor si, si
     jmp hang
 
 ; ===============================================================
 ;                  Read-only data & Buffers
 ; ===============================================================
 SECTION .data
-some_data db "hello", 0
+
 SECTION .rodata
 msg db "Hello Sugat, form Stage 2", 0
 a20_enabled_msg db "Enabled A20...", 0
 a20_fail_msg db "Bios failed to enable A20 line!!", 0
 urm_msg db "Hello from Unreal Mode", 0
 urm_failure db "Failed to enable Unreal mode", 0
+mm_failure db "Failed to create memory map", 0
+elf_load_failure db "Failed to load ELF", 0

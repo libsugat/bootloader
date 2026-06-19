@@ -80,7 +80,14 @@ $(STAGE2_BIN): $(STAGE2_ELF) | $(BUILD_DIR)
 
 $(TARGET): $(BOOT_BIN) $(STAGE2_BIN)
 	@echo "[Creating disk image]: $@"
-	@cat $^ > $(TARGET)
+	@dd if=/dev/zero of=$(TARGET) bs=512 count=4096
+	@echo "Writing MBR..."
+	@dd if=$(BOOT_BIN) of=$(TARGET) bs=512 count=1 conv=notrunc
+	@echo "Writing STAGE 2..."
+	@dd if=$(STAGE2_BIN) of=$(TARGET) bs=512 seek=1 conv=notrunc
+	@echo "Writing Kernel..."
+	@dd if=kernel of=$(TARGET) bs=512 seek=3 conv=notrunc
+	@sync
 
 # ============ Housekeeping & phony targets ================
 clean:

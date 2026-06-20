@@ -135,6 +135,21 @@ unreal_mode:
     call load_elf32       ; Call the loader
     mov si, elf_load_failure    ; If error, put the error message
     jc failed            ; If CF, then jump print message and end
+    
+    mov dword [kernel_start_ptr], eax
+
+    mov si, sign_off_string
+    call print_string
+    call print_new_line
+
+    ; Time for jump
+    cli
+    lgdt [gdt_descriptor]
+
+    mov eax, cr0
+    or eax, 0x01
+    mov cr0, eax
+    jmp 0x08:pmode_no_ret
 
     jmp hang
 
@@ -143,10 +158,39 @@ failed:
     xor si, si
     jmp hang
 
+bits 32
+pmode_no_ret:
+    mov ax, 0x10
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    mov esp, 0x7000    
+    mov ebp, esp
+
+
+    ; --- Enable SSE Instructions to prevent #UD ---
+    mov eax, cr0
+    and ax, 0xFFFB      ; Clear CR0.EM (bit 2)
+    or ax, 0x0002       ; Set CR0.MP (bit 1)
+    mov cr0, eax
+
+    mov eax, cr4
+    or ax, 0x0600       ; Set CR4.OSFXSR (bit 9) and CR4.OSXMMEXCPT (bit 10)
+    mov cr4, eax
+    ; ----------------------------------------------
+
+
+    mov eax, [kernel_start_ptr]
+    jmp eax
+
 ; ===============================================================
 ;                  Read-only data & Buffers
 ; ===============================================================
 SECTION .data
+kernel_start_ptr dd 0x0
 
 SECTION .rodata
 msg db "Hello Sugat, form Stage 2", 0
@@ -156,3 +200,4 @@ urm_msg db "Hello from Unreal Mode", 0
 urm_failure db "Failed to enable Unreal mode", 0
 mm_failure db "Failed to create memory map", 0
 elf_load_failure db "Failed to load ELF", 0
+sign_off_string db "Hey I am done my job. Aab tumhere haath main system, kernel!!!", 0

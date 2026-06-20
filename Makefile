@@ -86,7 +86,7 @@ $(TARGET): $(BOOT_BIN) $(STAGE2_BIN)
 	@echo "Writing STAGE 2..."
 	@dd if=$(STAGE2_BIN) of=$(TARGET) bs=512 seek=1 conv=notrunc
 	@echo "Writing Kernel..."
-	@dd if=kernel of=$(TARGET) bs=512 seek=3 conv=notrunc
+	@dd if=kernel of=$(TARGET) bs=512 seek=4 conv=notrunc
 	@sync
 
 # ============ Housekeeping & phony targets ================

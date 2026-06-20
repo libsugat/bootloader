@@ -13,14 +13,14 @@ global read_sectors
 SECTION .text
 ; =============================================================================
 ; Function: read_sectors
-; Input:    AX = lower 2 bytes of 64 bit target lba
-;           BP = upper 2 bytes of target lba
+; Input:    EAX = lower 4 bytes of 64 bit target lba
+;           EBP = upper 4 bytes of target lba
 ;           DI = Destination buffer pointer,
 ;           CX = Number of sectors to read
 ;           DL = drive number
 ;
 ; Output:   CF (Carry Flag), as success indicator
-; Assumeption: 16B are free starting at 0xa000
+; Assumeption: 16B are free starting at 0x7bf0
 ; =============================================================================
 read_sectors:
     push bx
@@ -38,8 +38,8 @@ read_sectors:
     mov byte [bx], 0x10                     ; The size of DAP (16 bytes)
     mov word [bx + DAP_DEST_OFF], di        ; destination address of the buffer
     mov word [bx + DAP_SECTORS_OFF], cx     ; Number of sectors to read
-    mov word [bx + DAP_SLBA_OFF], ax        ; LBA bits 0-15
-    mov word [bx + DAP_SLBA_OFF + 2], bp    ; LBA bits 16-31
+    mov dword [bx + DAP_SLBA_OFF], eax        ; LBA bits 0-15
+    mov dword [bx + DAP_SLBA_OFF + 4], ebp    ; LBA bits 16-31
 
     mov ah, 0x42        ; Extended read, disk read
     mov si, DAP_ADDRESS ; Set the address of DAP

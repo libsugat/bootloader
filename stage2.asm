@@ -130,8 +130,8 @@ unreal_mode:
 
     ; We need to load elf files now
     mov dl, [BOOT_DRIVE]        ; Read form boot drive
-    mov ax, 0x03
-    xor bp, bp          
+    mov eax, 0x04
+    xor ebp, ebp          
     call load_elf32       ; Call the loader
     mov si, elf_load_failure    ; If error, put the error message
     jc failed            ; If CF, then jump print message and end

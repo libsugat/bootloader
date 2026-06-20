@@ -32,17 +32,6 @@ boot:
     mov ss, ax
     mov sp, 0x7000
     sti
-    
-; setup_stack:
-;     cli
-;     mov ax, 0
-;     mov es, ax
-;     mov di, 0x1000        ; Start of stack destination
-;     mov cx, 0x6000        ; Size of stack area (0x7000 - 0x1000)
-;     mov al, 0xCC          ; Fill pattern
-;     cld
-;     rep stosb             ; Fill the whole stack area with 0xCC
-;     sti
 
     ; Print hello world
     mov si, hello
@@ -63,9 +52,9 @@ boot:
     ; lets try reading second sector form the disk
     mov dl, [BOOT_DRIVE]        ; Read form boot drive
     mov di, 0x7e00
-    mov cx, 0x02
-    mov ax, 0x01
-    xor bp, bp
+    mov cx, 0x03
+    mov eax, 0x01
+    xor ebp, ebp
     call read_sectors
 
     jc disk_error    ; If read fails

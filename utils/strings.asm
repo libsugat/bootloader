@@ -62,16 +62,16 @@ memcpy_unreal:
     push ax
 
     test ecx, ecx
-    jz memcpy_unreal__done
+    jz .exit
 
-memcpy_unreal__loop:
+.loop:
     mov al, [ds:esi]
     mov byte [fs:edi], al
     inc esi
     inc edi
     dec ecx
-    jnz memcpy_unreal__loop
-memcpy_unreal__done:
+    jnz .loop
+.exit:
     
     pop ax
     pop esi
@@ -88,14 +88,14 @@ clear_bytes_unreal:
     xor eax, eax
 
     test ecx, ecx
-    jz clear_bytes_unreal__done
+    jz .exit
 
-clear_bytes_unreal__loop:
+.loop:
     mov byte [fs:edi], al
     inc edi
     dec ecx
-    jnz clear_bytes_unreal__loop
+    jnz .loop
 
-clear_bytes_unreal__done:
+.exit:
     pop ax
     ret

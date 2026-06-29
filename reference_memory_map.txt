@@ -17,13 +17,13 @@
          |                    |
          |                    |
          | ---------------    | 0xFFFF
-         | Bounce Buffer      |     For reading disk, this is of size 12KiB
+         | Bounce Buffer      |        For reading disk, this is of size 12KiB
          | ---------------    | 0xD000
          |                    |
          |                    |
          | ______________     |
          | --------------     |
-         | ELF file header    |
+         | ELF file header    |         cache storage of elf headers
          | ______________     |
          | --------------     | 0x9200
          | Message Scratchpad |         used as destination for calls like number to string

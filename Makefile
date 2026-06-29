@@ -3,6 +3,9 @@ ASM      := nasm
 LD       := ld
 OBJCOPY  := objcopy
 
+# path to kernel to load
+KERNEL ?= kernel
+
 ASM_FLAGS := -f elf32
 LDFLAGS   := -m elf_i386
 
@@ -78,7 +81,12 @@ $(BOOT_BIN): $(BS_ELF) | $(BUILD_DIR)
 $(STAGE2_BIN): $(STAGE2_ELF) | $(BUILD_DIR)
 	@$(OBJCOPY) -O binary $< $@
 
-$(TARGET): $(BOOT_BIN) $(STAGE2_BIN)
+$(KERNEL):
+	@echo "❌ Error: 'kernel' binary not found in root directory!"
+	@echo "Please build your ELF32 kernel and place it here as 'kernel' before making the disk image."
+	@exit 1
+
+$(TARGET): $(BOOT_BIN) $(STAGE2_BIN) $(KERNEL)
 	@echo "[Creating disk image]: $@"
 	@dd if=/dev/zero of=$(TARGET) bs=512 count=4096
 	@echo "Writing MBR..."
@@ -86,7 +94,7 @@ $(TARGET): $(BOOT_BIN) $(STAGE2_BIN)
 	@echo "Writing STAGE 2..."
 	@dd if=$(STAGE2_BIN) of=$(TARGET) bs=512 seek=1 conv=notrunc
 	@echo "Writing Kernel..."
-	@dd if=kernel of=$(TARGET) bs=512 seek=4 conv=notrunc
+	@dd if=$(KERNEL) of=$(TARGET) bs=512 seek=4 conv=notrunc
 	@sync
 
 # ============ Housekeeping & phony targets ================

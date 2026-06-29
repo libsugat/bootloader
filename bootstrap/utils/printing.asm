@@ -28,13 +28,13 @@ number_to_str:
     xor cx, cx
 
     test ax, ax
-    jnz convert
+    jnz .convert
     mov byte [di], '0'
     inc di
-    jmp number_to_str__exit
-convert:
+    jmp .exit
+.convert:
     mov bx, 10
-next_digit:
+.next_digit:
     xor dx, dx
     div bx
 
@@ -43,17 +43,17 @@ next_digit:
     inc cx
 
     test ax, ax
-    jnz next_digit
+    jnz .next_digit
     
     mov ax, cx
 
-get_str:
+.get_str:
     pop dx
     mov [di], dl
     inc di
-    loop get_str
+    loop .get_str
     
-number_to_str__exit:
+.exit:
     mov byte [di], 0
     mov di, si
 
@@ -70,14 +70,14 @@ number_to_str__exit:
 ; Affected registers : AX, AH
 print_string:
     cld
-.loop
+.loop:
     mov ah, 0x0e ; teletype
     lodsb
     or al, al
-    jz print_string__exit
+    jz .exit
     int 0x10
     jmp .loop
-print_string__exit:
+.exit:
     ret
 
 ; --- prints a new line ---
@@ -88,9 +88,5 @@ print_new_line:
     int 0x10
     mov al, 10
     int 0x10
-    ; push si
-    ; mov si, new_line_str
-    ; call print_string
-    ; pop si
     ret
 

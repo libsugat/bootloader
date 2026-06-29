@@ -55,10 +55,10 @@ check_a20:
 
     ; deterine the return value
     mov ax, 0
-    je check_a20__exit
+    je .exit
     mov ax, 1
 
-check_a20__exit:
+.exit:
     pop si
     pop di
     pop es
@@ -80,22 +80,22 @@ enable_a20:
 
     call check_a20
     or ax, ax
-    jnz enable_a20__exit
+    jnz .exit
 
     ; Try Bios Interrupts to enable A20 line
     mov ax, 0x2401
     int 0x15
     ; for skipping complexity and being lazy I am not writing
     ; the wiki.osdev.org suggested full path
-    ; for refernce next tries are keyboard controller, and then fast a20 gate
+    ; for quick refernce, next tries are keyboard controller, and then fast a20 gate
     
     call check_a20
     or ax, ax
-    jnz enable_a20__exit
+    jnz .exit
     
     stc
     
-enable_a20__exit:
+.exit:
     popa
     sti
     ret

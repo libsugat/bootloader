@@ -193,7 +193,7 @@ SECTION .data
 kernel_start_ptr dd 0x0
 
 SECTION .rodata
-msg db "Hello Sugat, form Stage 2", 0
+msg db "Hello Sugat, from Stage 2", 0
 a20_enabled_msg db "Enabled A20...", 0
 a20_fail_msg db "Bios failed to enable A20 line!!", 0
 urm_msg db "Hello from Unreal Mode", 0

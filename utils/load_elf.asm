@@ -91,19 +91,19 @@ load_elf32:
     mov di, BOUNCE_BUFFER_OFFSET
     ; DL already taken as input
     call read_sectors ; Call function to read sectors
-    jc load_elf32__error_exit
+    jc .exit
 
     
     ; Perform checks
     ; verify if the file is elf using magic signature
     cmp dword [di + ELF32H_MAGIC], ELF_MAGIC_SIGNATURE
-    jne load_elf32__error_exit
+    jne .error_exit
     ; As endianness and class combined just takes only 2 bytes we could use single comparison
     cmp word [di + ELF32H_CLASS], 0x0101 ; 01 for 32bit and 01 for little endian
-    jne load_elf32__error_exit
+    jne .error_exit
     ; Check for maching or ISA
     cmp word [di + ELF32H_MACHINE], 0x03 ; 03 for x86, 0x3E for amd64
-    jne load_elf32__error_exit
+    jne .error_exit
     
 
     ; Copy data form bouce buffer to header buffer
@@ -125,11 +125,11 @@ load_elf32:
 
 
     mov ax, 0
-loop_pht_entries:
+.loop_pht_entries:
     ; if the entry type is PT_LOAD, print something else something else
     cmp dword [bp + ELF32PH_TYPE], 0x01
-    jne elf32phte_nto_load
-elf32phte_to_load:
+    jne .elf32phte_skip
+.elf32phte_to_load:
     ; Branch A: If ph_type == PT_LOAD
     pushad
 
@@ -155,12 +155,12 @@ elf32phte_to_load:
     xor edx, edx
     mov dl, [drive_with_elf]
     call read_sectors
-    jnc no_error_sector_read
+    jnc .no_error_sector_read
     ; If error fix the stack alignment and just jump to exit with error
     popad
     popad
-    jmp load_elf32__error_exit
-no_error_sector_read:
+    jmp .error_exit
+.no_error_sector_read:
     popad ; restore the cpu state before loading the fist sector to bounce buffer
 
     ; Calculate the number of Bytes, that are available 
@@ -187,14 +187,14 @@ no_error_sector_read:
     ; Update, number of bytes to load, the file_offset and calculate he total sectors to load
     add eax, edx
     sub ecx, edx
-    jz read_and_load_part_done
+    jz .read_and_load_part_done
     mov edx, ecx
     add edx, 511
     shr edx, 9 ; Divide by 512
 
     ; ----- Load data from consiqutive sectors to the designated memory 
     ; Use edx as counter of remaining segments
-segment_sector_loading_loop:
+.segment_sector_loading_loop:
     ; Load the sector to Bounce buffer
     push eax
     push edx
@@ -231,9 +231,9 @@ segment_sector_loading_loop:
     sub ecx, ebx
     add eax, ebx
     dec edx ; Decrement the number of sectors remaining
-    jnz segment_sector_loading_loop
+    jnz .segment_sector_loading_loop
 
-read_and_load_part_done:
+.read_and_load_part_done:
 
     ; Loading ph_filesz and ph_memsize fomr the cache
     mov bp, [current_program_header_offset]
@@ -242,29 +242,29 @@ read_and_load_part_done:
     sub ecx, [bp + ELF32PH_FILESZ]
     call clear_bytes_unreal
 
-elf32phte_to_load__done:
+.elf32phte_to_load__done:
     
     popad
-loop_pht_entries_adv:
+.loop_pht_entries_adv:
     ; Advance BP to the next program header entry
     inc ax
     add bp, [di + ELF32H_PHENTSIZE]
     dec ecx              ; Decrement loop counter manually
-    jnz loop_pht_entries
-    ; loop loop_pht_entries ; Jump if ecx != 0
+    jnz .loop_pht_entries
+    ; loop .loop_pht_entries ; Jump if ecx != 0
 
     ; Return the memory address of kernel start
     mov eax, [di + ELF32H_ENTRY]
 
-    jmp load_elf32__exit
-load_elf32__error_exit:
+    jmp .exit
+.error_exit:
     stc; set carry flag indicating some error
-load_elf32__exit:
+.exit:
     ret
 
-elf32phte_nto_load:
+.elf32phte_skip:
     ; Branch B: If ph_type != PT_LOAD
-    jmp loop_pht_entries_adv
+    jmp .loop_pht_entries_adv
 
 SECTION .data
 drive_with_elf db 0x0

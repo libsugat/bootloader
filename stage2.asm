@@ -142,6 +142,15 @@ unreal_mode:
     call print_string
     call print_new_line
 
+    ; Inform BIOS of target processor mode
+    xor bx, bx
+    mov ax, 0xec00
+    mov bl, 0x01 ; 1 = protected mode
+    int 0x15     ; start service call
+    ; We will simply ignore the the output status, because some bios does not implement this
+    ; This is done specifically to so that motherboard can update its SMM
+
+
     ; Time for jump
     cli
     lgdt [gdt_descriptor]

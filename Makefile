@@ -7,7 +7,7 @@ OBJCOPY  := objcopy
 KERNEL ?= kernel
 
 ASM_FLAGS := -f elf32
-LDFLAGS   := -m elf_i386
+LDFLAGS   := -m elf_i386 --no-warn-rwx-segments
 
 # Directories & Targets
 BUILD_DIR           := build

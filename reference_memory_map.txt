@@ -1,3 +1,6 @@
+            HISTORICAL PC/AT
+                MAP
+
 1 MB     +--------------------+ 0xFFFFF
          |                    |
          |  System BIOS ROM   |  64 KB

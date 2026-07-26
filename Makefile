@@ -9,6 +9,7 @@ KERNEL ?= kernel
 ASM_FLAGS := -f elf32
 LDFLAGS   := -m elf_i386 --no-warn-rwx-segments
 
+
 # Directories & Targets
 BUILD_DIR           := build
 TARGET              := $(BUILD_DIR)/disk.img
@@ -41,7 +42,7 @@ all: $(BUILD_DIR) $(TARGET)
 
 run: all
 	@echo "[Running]: QEMU x86_64"
-	qemu-system-x86_64 -drive format=raw,file=$(TARGET) -d cpu_reset,int -no-reboot -no-shutdown
+	qemu-system-x86_64 -drive format=raw,file=$(TARGET) -no-reboot -no-shutdown -monitor stdio $(QEMU_EXTRA)
 
 $(BUILD_DIR):
 	@mkdir -p $@

@@ -180,6 +180,9 @@ pmode_no_ret:
     mov ebp, esp
 
 
+    ; Below code is there because xv6 expects SSE Enabled
+    ; Proper way to do this is to query all capabilities and enable them
+    ; in MSR register
     ; --- Enable SSE Instructions to prevent #UD ---
     mov eax, cr0
     and ax, 0xFFFB      ; Clear CR0.EM (bit 2)

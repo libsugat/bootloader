@@ -56,7 +56,7 @@ ELF32PH_FLAGS       equ 0x18   ; 0x18: Segment flags (Read/Write/Execute)
 ELF32PH_ALIGN       equ 0x1C   ; 0x1C: Segment alignment
 ELF32PH_SIZE        equ 0x20
 
-; ----- Useful memory addresses ----
+; ----- Useful memory addresses and Constants ----
 BOUNCE_BUFFER_OFFSET     equ 0xd000
 ELF_HEAD_OFFSET     equ 0x9200
 ELF_MAGIC_SIGNATURE equ 0x464c457f ; 0x7F, 'E', 'L', 'F' but in little endian

@@ -20,6 +20,9 @@ extern number_to_hex
 extern check_a20
 extern enable_a20
 
+; from a20_utilities.asm
+extern search_rsdp
+
 ; from gdt.asm
 extern gdt_descriptor
 
@@ -30,6 +33,13 @@ extern load_elf32
 ; =================================================================  
 
 global _start
+
+; ----- Useful memory addresses and Constants ----
+BOOT_INFO_PAGE      equ 0xB000
+; BOOT_INFO struct offsets
+BOOT_INFO_E280_LIST_PTR equ 0x00
+BOOT_INFO_E280_COUNT    equ 0x04
+BOOT_INFO_RSDP_PTR      equ 0x08
 
 ; =================================================================  
 ; CODE SEGMENT: Executable Instructions
@@ -123,14 +133,27 @@ unreal_mode:
     call print_new_line
 
     ; Build the memory map at address 0x0600
+    xor edi, edi
+    xor eax, eax
     mov di, 0x0600
     call build_memory_map ; Call out function to do memory map
     mov si, mm_failure    ; If error, put the error message
     jc failed       ; Just in case
 
+    and eax, 0xFFFF      ; Number of entries returned in ax
+    mov dword [BOOT_INFO_PAGE + BOOT_INFO_E280_LIST_PTR], edi
+    mov dword [BOOT_INFO_PAGE + BOOT_INFO_E280_COUNT], eax
+
+    ; Search for rsdp
+    call search_rsdp
+    mov si, rsdp_search_fail    ; If error, put the error message
+    jc failed       ; Just in case
+
+    mov dword [BOOT_INFO_PAGE + BOOT_INFO_RSDP_PTR], edi
+
     ; We need to load elf files now
     mov dl, [BOOT_DRIVE]        ; Read form boot drive
-    mov eax, 0x04
+    mov eax, 0x05
     xor ebp, ebp          
     call load_elf32       ; Call the loader
     mov si, elf_load_failure    ; If error, put the error message
@@ -179,7 +202,6 @@ pmode_no_ret:
     mov esp, 0x7000    
     mov ebp, esp
 
-
     ; Below code is there because xv6 expects SSE Enabled
     ; Proper way to do this is to query all capabilities and enable them
     ; in MSR register
@@ -194,9 +216,11 @@ pmode_no_ret:
     mov cr4, eax
     ; ----------------------------------------------
 
-
-    mov eax, [kernel_start_ptr]
-    jmp eax
+    mov eax, 0x20061106         ; Just bootloader magic signature
+    mov ebx, BOOT_INFO_PAGE             ; Load boot_info address into EBX
+    jmp [kernel_start_ptr]      ; Just jump to kernel
+    ; mov edi, [kernel_start_ptr]
+    ; jmp edi
 
 ; ===============================================================
 ;                  Read-only data & Buffers
@@ -211,5 +235,6 @@ a20_fail_msg db "Bios failed to enable A20 line!!", 0
 urm_msg db "Hello from Unreal Mode", 0
 urm_failure db "Failed to enable Unreal mode", 0
 mm_failure db "Failed to create memory map", 0
+rsdp_search_fail db "Failed to find RSDP, seems like acpi is not supported... :(", 0
 elf_load_failure db "Failed to load ELF", 0
 sign_off_string db "Hey I am done my job. Aab tumhere haath main system, kernel!!!", 0

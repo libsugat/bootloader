@@ -52,7 +52,7 @@ boot:
     ; lets try reading second sector form the disk
     mov dl, [BOOT_DRIVE]        ; Read form boot drive
     mov di, 0x7e00
-    mov cx, 0x03
+    mov cx, 0x04
     mov eax, 0x01
     xor ebp, ebp
     call read_sectors

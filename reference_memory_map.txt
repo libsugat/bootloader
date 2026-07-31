@@ -23,6 +23,10 @@
          | Bounce Buffer      |        For reading disk, this is of size 12KiB
          | ---------------    | 0xD000
          |                    |
+         | ---------------    | 0xBFFF
+         | boot_info          |
+         | passed to kernel   |
+         | ---------------    | 0xB000
          |                    |
          | ______________     |
          | --------------     |

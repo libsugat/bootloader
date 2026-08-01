@@ -65,6 +65,7 @@ _start:
     jmp 0x08:pmode
 
 hang:
+    cli
     hlt
     jmp hang
 

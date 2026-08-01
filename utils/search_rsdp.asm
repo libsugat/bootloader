@@ -29,7 +29,7 @@ SECTION .text
 ;   ECX     - Search length in bytes
 ;
 ; Outputs:
-;   ZF      - Set (1) if Quadword found, Cleared (0) if not found
+;   CF      - Set (1) if Quadword not found, Cleared (1) if found
 ;   EDI     - Pointer to the EXACT START of the matching 64-bit quadword
 ;   ECX     - Remaining bytes in range
 ; ====================================================================
@@ -55,9 +55,11 @@ search_quadword:
 
 .quadword_not_found:
     xor edi, edi    ; Return null
+    stc
     ret
 
 .quadword_found:
+    clc
     ret
 
 ; ====================================================================
@@ -80,7 +82,7 @@ search_rsdp:
     mov edx, RSDP_SIGNATURE_HIGH
     mov ecx, 1024                   ; 1kib
     call search_quadword
-    jnz .found
+    jnc .found
 
 .bios_search:
     ; Search in EDBA starting 0xE0000 to 0xFFFFF
@@ -89,7 +91,7 @@ search_rsdp:
     mov edi, 0xE0000
     mov ecx, 0x20000
     call search_quadword
-    jz .found
+    jnc .found
     ; If we reach here it simply means that RSDP was not found
     xor edi, edi
     stc     ; Set carry flag
